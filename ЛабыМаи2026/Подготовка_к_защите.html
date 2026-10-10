@@ -1,0 +1,824 @@
+<title>Защита ФА, работа №1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #18202c;
+  --muted: #5a6474;
+  --line: #dde2e9;
+  --accent: #0e7a68;
+  --accent-soft: #e2f2ee;
+  --code-bg: #eceff4;
+  --warn: #9a5a00;
+  --warn-soft: #fbf1e1;
+  --sans: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", Consolas, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151b;
+    --surface: #181e26;
+    --ink: #e3e8ef;
+    --muted: #9aa4b4;
+    --line: #2a323d;
+    --accent: #45c2a8;
+    --accent-soft: #15302b;
+    --code-bg: #1f2630;
+    --warn: #e2a74e;
+    --warn-soft: #2e2416;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151b;
+  --surface: #181e26;
+  --ink: #e3e8ef;
+  --muted: #9aa4b4;
+  --line: #2a323d;
+  --accent: #45c2a8;
+  --accent-soft: #15302b;
+  --code-bg: #1f2630;
+  --warn: #e2a74e;
+  --warn-soft: #2e2416;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  padding-inline: 16px;
+  padding-block: 0 64px;
+}
+.layout {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 40px;
+}
+nav.side {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  align-self: start;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding-block: 32px 24px;
+}
+nav.side .brand {
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+nav.side .sub {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+nav.side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+nav.side a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+}
+nav.side a:hover { background: var(--surface); }
+nav.side a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+nav.side .group { color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; margin: 14px 10px 4px; }
+.tick { font-size: 12px; color: var(--accent); font-weight: 600; }
+.progress { margin: 0 10px 16px; font-size: 13px; color: var(--muted); }
+.bar { height: 4px; background: var(--line); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+main { padding-block: 32px; min-width: 0; }
+header.top { margin-bottom: 40px; max-width: 70ch; }
+header.top .eyebrow { color: var(--accent); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600; }
+h1 { font-size: 34px; line-height: 1.15; margin: 8px 0 12px; text-wrap: balance; }
+h2 { font-size: 26px; line-height: 1.2; margin: 0 0 6px; text-wrap: balance; }
+h3 { font-size: 18px; margin: 28px 0 8px; }
+h4 { font-size: 15px; margin: 18px 0 6px; }
+p, li { max-width: 70ch; }
+.lead { color: var(--muted); font-size: 17px; }
+section.block {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 28px clamp(16px, 4vw, 36px);
+  margin-bottom: 28px;
+  scroll-margin-top: 16px;
+}
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+.sec-head .kicker { color: var(--muted); font-size: 13px; }
+label.done {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 14px; color: var(--muted); cursor: pointer; user-select: none;
+  border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px;
+}
+label.done input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+label.done:has(input:checked) { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+code { font-family: var(--mono); font-size: .88em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  line-height: 1.55;
+  background: var(--code-bg);
+  border-radius: 8px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  margin: 10px 0 14px;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+.cm { color: var(--muted); }
+.note, .warn {
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  max-width: 76ch;
+}
+.note { background: var(--accent-soft); }
+.warn { background: var(--warn-soft); }
+.note strong:first-child, .warn strong:first-child { display: block; margin-bottom: 2px; }
+.warn strong:first-child { color: var(--warn); }
+.note strong:first-child { color: var(--accent); }
+.table-wrap { overflow-x: auto; margin: 10px 0 14px; }
+table { border-collapse: collapse; font-size: 14px; min-width: 480px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+td code { white-space: nowrap; }
+.qa { margin-top: 10px; display: grid; gap: 8px; }
+details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 16px;
+  background: var(--bg);
+}
+details summary {
+  cursor: pointer;
+  padding: 12px 0;
+  font-weight: 500;
+  list-style: none;
+  display: flex;
+  gap: 10px;
+}
+details summary::-webkit-details-marker { display: none; }
+details summary::before { content: "?"; color: var(--accent); font-weight: 700; font-family: var(--mono); }
+details[open] summary::before { content: "−"; }
+details summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+details .ans { padding: 0 0 14px 22px; }
+details .ans p:first-child { margin-top: 0; }
+.steps { padding-left: 20px; }
+.steps li { margin-bottom: 6px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+button {
+  font-family: var(--sans); font-size: 14px;
+  border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; gap: 0; }
+  nav.side {
+    position: static; max-height: none; padding-block: 20px 0;
+  }
+  nav.side ul { display: flex; flex-wrap: wrap; gap: 4px; }
+  nav.side a { border: 1px solid var(--line); background: var(--surface); padding: 4px 10px; font-size: 13px; }
+  nav.side .group { width: 100%; margin: 10px 0 2px; }
+  h1 { font-size: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+</style>
+
+<div class="layout">
+<nav class="side" aria-label="Разделы">
+  <div class="brand">Защита работы №1</div>
+  <div class="sub">Фундаментальные алгоритмы, МАИ</div>
+  <div class="progress"><span id="progress-text">Разобрано: 0 из 12</span><div class="bar"><span id="progress-bar"></span></div></div>
+  <ul>
+    <li class="group">Начать здесь</li>
+    <li><a href="#plan">План подготовки <span class="tick" data-for="plan"></span></a></li>
+    <li><a href="#basics">Основы C <span class="tick" data-for="basics"></span></a></li>
+    <li><a href="#rules">Общие требования <span class="tick" data-for="rules"></span></a></li>
+    <li class="group">Задания</li>
+    <li><a href="#t1">1. Флаги и число x <span class="tick" data-for="t1"></span></a></li>
+    <li><a href="#t3">3. Уравнения, кратность <span class="tick" data-for="t3"></span></a></li>
+    <li><a href="#t9">9. Массивы <span class="tick" data-for="t9"></span></a></li>
+    <li><a href="#t10">10. Системы счисления <span class="tick" data-for="t10"></span></a></li>
+    <li><a href="#t4">4. Обработка файла <span class="tick" data-for="t4"></span></a></li>
+    <li><a href="#t8">8. Минимальное основание <span class="tick" data-for="t8"></span></a></li>
+    <li><a href="#t7">7. Лексемы <span class="tick" data-for="t7"></span></a></li>
+    <li><a href="#t6">6. Переменные аргументы <span class="tick" data-for="t6"></span></a></li>
+    <li><a href="#t5">5. Ряды и интегралы <span class="tick" data-for="t5"></span></a></li>
+    <li><a href="#t2">2. Константы e, π, γ… <span class="tick" data-for="t2"></span></a></li>
+    <li class="group">На защите</li>
+    <li><a href="#memory">Dr. Memory</a></li>
+  </ul>
+</nav>
+
+<main>
+<header class="top">
+  <div class="eyebrow">Подготовка с нуля</div>
+  <h1>Как защитить работу №1 по ФА</h1>
+  <p class="lead">Здесь разобрано всё, что нужно для защиты: основы C, которые используются в ваших программах, устройство каждого задания, теория и вопросы, которые задают чаще всего. Задания идут не по номерам, а от простых к сложным.</p>
+  <p class="lead">Отмечайте разобранные разделы кнопкой «Разобрался». Отметки сохраняются в этом браузере.</p>
+</header>
+
+<section class="block" id="plan">
+  <div class="sec-head"><h2>План подготовки</h2><label class="done"><input type="checkbox" data-id="plan"> Разобрался</label></div>
+  <p>Проверяющий не ждёт, что вы выучите код наизусть. Он проверяет, понимаете ли вы, <strong>что</strong> делает каждая строка и <strong>почему</strong> она написана именно так. Если понимать, на вопросы можно отвечать своими словами.</p>
+
+  <h3>Что вы должны уметь по каждой задаче</h3>
+  <ol class="steps">
+    <li>Собрать и запустить программу, показать правильную работу и реакцию на неправильный ввод.</li>
+    <li>Пройти по <code>main</code> сверху вниз и рассказать, что происходит.</li>
+    <li>Объяснить любую функцию: что принимает, что возвращает, какие ошибки обрабатывает.</li>
+    <li>Ответить на вопросы по теории (математика задачи и конструкции языка C).</li>
+    <li>Внести небольшое изменение прямо на защите. Например, добавить флаг, поменять формат вывода или условие. Такие просьбы встречаются часто, и это лучший способ проверить, что код ваш.</li>
+    <li>Показать проверку через Dr. Memory для задач с динамической памятью.</li>
+  </ol>
+
+  <h3>Порядок подготовки</h3>
+  <ol class="steps">
+    <li><strong>Основы C и общие требования.</strong> Без них остальное не понять. Потратьте на них больше всего времени.</li>
+    <li><strong>Простые задачи: 1, 3, 9, 10.</strong> Здесь нет файлов, только арифметика и аргументы.</li>
+    <li><strong>Файлы: 4, 8, 7.</strong> Чтение и запись файлов, динамическая память.</li>
+    <li><strong>Сложные: 6, 5, 2.</strong> Переменное число аргументов, численные методы, математика.</li>
+  </ol>
+
+  <div class="note"><strong>Лучший способ учиться</strong>Откройте код задания рядом с этой страницей и для каждой строки задайте себе вопрос «зачем она тут?». Потом сломайте что-нибудь нарочно: уберите проверку, поменяйте условие, запустите. Посмотрите, что изменилось. Так запоминается в разы лучше, чем при чтении.</div>
+  <div class="warn"><strong>Если не знаете ответа</strong>Не выдумывайте. Скажите «не уверен, но думаю, что…» и рассуждайте вслух. Проверяющие спокойнее относятся к честному рассуждению, чем к уверенной ошибке.</div>
+  <p>Ещё можно попросить Claude устроить вам пробную защиту: он будет задавать вопросы по конкретной задаче как проверяющий и разбирать ваши ответы.</p>
+</section>
+
+<section class="block" id="basics">
+  <div class="sec-head"><h2>Основы C, которые нужны для защиты</h2><label class="done"><input type="checkbox" data-id="basics"> Разобрался</label></div>
+  <p class="lead">Только то, что реально встречается в ваших программах.</p>
+
+  <h3>1. Компиляция</h3>
+  <p>C — компилируемый язык. Компилятор <code>gcc</code> превращает исходник <code>.c</code> в исполняемый файл <code>.exe</code>, который потом запускается.</p>
+  <pre><code>gcc -std=c99 -Wall -g -o task1.exe task1.c -lm</code></pre>
+  <div class="table-wrap"><table>
+    <tr><th>Флаг</th><th>Что значит</th></tr>
+    <tr><td><code>-std=c99</code></td><td>Компилировать по стандарту C99, как требует задание.</td></tr>
+    <tr><td><code>-Wall</code></td><td>Показывать предупреждения о подозрительном коде.</td></tr>
+    <tr><td><code>-g</code></td><td>Добавить отладочную информацию: номера строк в отчётах Dr. Memory.</td></tr>
+    <tr><td><code>-o task1.exe</code></td><td>Имя выходного файла.</td></tr>
+    <tr><td><code>-lm</code></td><td>Подключить математическую библиотеку (<code>sqrt</code>, <code>pow</code>, <code>log</code>…).</td></tr>
+  </table></div>
+
+  <h3>2. Аргументы командной строки</h3>
+  <pre><code>int main(int argc, char *argv[])</code></pre>
+  <p><code>argc</code> — количество аргументов, <code>argv</code> — массив строк с ними. <strong><code>argv[0]</code> всегда содержит имя программы</strong>, поэтому реальные аргументы начинаются с <code>argv[1]</code>.</p>
+  <pre><code>.\task1.exe 7 -p
+<span class="cm">argc = 3,  argv[0] = ".\task1.exe",  argv[1] = "7",  argv[2] = "-p"</span></code></pre>
+  <p>Все аргументы — <strong>строки</strong>. Число <code>"7"</code> нужно ещё перевести в <code>long</code>, этим занимается функция <code>parse_long</code>.</p>
+  <p>Возвращаемое значение <code>main</code> — код завершения: <code>0</code> означает успех, <code>1</code> — ошибку.</p>
+
+  <h3>3. Типы данных и переполнение</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Тип</th><th>Размер (Windows, MinGW)</th><th>Диапазон</th></tr>
+    <tr><td><code>char</code></td><td>1 байт</td><td>символ или число −128…127</td></tr>
+    <tr><td><code>int</code></td><td>4 байта</td><td>≈ ±2.1·10⁹</td></tr>
+    <tr><td><code>long</code></td><td>4 байта (в Linux 8)</td><td>≈ ±2.1·10⁹</td></tr>
+    <tr><td><code>long long</code></td><td>8 байт</td><td>≈ ±9.2·10¹⁸</td></tr>
+    <tr><td><code>unsigned long long</code></td><td>8 байт</td><td>0 … 1.8·10¹⁹</td></tr>
+    <tr><td><code>double</code></td><td>8 байт</td><td>≈ 15–16 значащих цифр</td></tr>
+  </table></div>
+  <p><strong>Переполнение</strong> — результат не помещается в тип. Для знаковых типов это неопределённое поведение (может произойти что угодно), поэтому в коде мы <em>заранее</em> проверяем, поместится ли результат:</p>
+  <pre><code>if (value &gt; ULLONG_MAX / i) {   <span class="cm">// если value * i не влезет</span>
+    return STATUS_OVERFLOW;
+}
+value *= i;</code></pre>
+  <p>Проверять «после» нельзя: само переполнение уже ошибка.</p>
+
+  <h3>4. Указатели</h3>
+  <p>Указатель хранит <strong>адрес</strong> переменной в памяти. <code>&amp;x</code> — адрес переменной <code>x</code>; <code>*p</code> — значение, лежащее по адресу <code>p</code>.</p>
+  <p>В C аргументы передаются в функцию <strong>копией</strong>. Чтобы функция могла записать результат в переменную вызывающего кода, ей передают адрес этой переменной:</p>
+  <pre><code>Status factorial(const long x, unsigned long long *result) {
+    ...
+    *result = value;          <span class="cm">// записываем по адресу</span>
+    return STATUS_OK;         <span class="cm">// а возвращаем статус</span>
+}
+
+unsigned long long f;
+status = factorial(5, &amp;f);   <span class="cm">// передаём адрес f</span></code></pre>
+  <p>Именно так во всех заданиях функция «возвращает» два значения сразу: результат через указатель, статус через <code>return</code>. Этого требует условие.</p>
+  <p><code>NULL</code> — «пустой» указатель, который никуда не указывает. Разыменовать его (<code>*NULL</code>) — значит уронить программу, поэтому каждая функция в начале проверяет указатели на <code>NULL</code>.</p>
+
+  <h3>5. Массивы и строки</h3>
+  <p>Массив — подряд лежащие элементы одного типа, нумерация с <code>0</code>. При передаче в функцию массив превращается в указатель на свой первый элемент, поэтому функция не знает его длину: размер передаётся отдельным параметром.</p>
+  <p>Строка в C — это массив <code>char</code>, который заканчивается нулевым символом <code>'\0'</code>. По нему функции понимают, где строка кончается.</p>
+  <pre><code>"abc"  →  'a' 'b' 'c' '\0'      <span class="cm">// 4 байта!</span></code></pre>
+  <div class="table-wrap"><table>
+    <tr><th>Функция</th><th>Что делает</th></tr>
+    <tr><td><code>strlen(s)</code></td><td>Длина строки без <code>'\0'</code>.</td></tr>
+    <tr><td><code>strcmp(a, b)</code></td><td>Сравнение: <code>0</code>, если строки равны. Писать <code>a == b</code> нельзя: так сравниваются адреса, а не текст.</td></tr>
+    <tr><td><code>strcpy</code>, <code>strcat</code></td><td>Копирование и дописывание строки. Место под результат должно быть выделено заранее.</td></tr>
+  </table></div>
+
+  <h3>6. Динамическая память</h3>
+  <p>Когда размер данных неизвестен на этапе написания программы (длина слова в файле, размер случайного массива), память выделяют во время работы:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Функция</th><th>Что делает</th></tr>
+    <tr><td><code>malloc(n)</code></td><td>Выделяет <code>n</code> байт. Содержимое — мусор.</td></tr>
+    <tr><td><code>calloc(k, size)</code></td><td>Выделяет <code>k</code> элементов по <code>size</code> байт и заполняет нулями.</td></tr>
+    <tr><td><code>realloc(p, n)</code></td><td>Меняет размер ранее выделенного блока, сохраняя данные.</td></tr>
+    <tr><td><code>free(p)</code></td><td>Возвращает память системе.</td></tr>
+  </table></div>
+  <p>Три обязательных правила, их проверяют всегда:</p>
+  <ol class="steps">
+    <li><strong>Проверять результат на <code>NULL</code>.</strong> Если памяти нет, <code>malloc</code> возвращает <code>NULL</code>.</li>
+    <li><strong>Освобождать всё выделенное</strong>, в том числе на путях с ошибкой. Невозвращённая память называется <em>утечкой</em>; её и ищет Dr. Memory.</li>
+    <li><strong><code>realloc</code> — через временный указатель:</strong></li>
+  </ol>
+  <pre><code>new_buffer = realloc(*buffer, *capacity * 2);
+if (new_buffer == NULL) {
+    return STATUS_MEMORY_ERROR;   <span class="cm">// старый *buffer цел, его можно освободить</span>
+}
+*buffer = new_buffer;</code></pre>
+  <p>Если написать <code>buffer = realloc(buffer, ...)</code> и <code>realloc</code> вернёт <code>NULL</code>, старый адрес потеряется, и память утечёт.</p>
+  <p><code>free(NULL)</code> безопасен и ничего не делает. Поэтому в коде можно спокойно освобождать указатели, которые, возможно, не были выделены, если они изначально равны <code>NULL</code>.</p>
+
+  <h3>7. Файлы</h3>
+  <pre><code>FILE *in = fopen("a.txt", "r");   <span class="cm">// "r" чтение, "w" запись (файл очищается!)</span>
+if (in == NULL) { ... ошибка открытия ... }
+int c = fgetc(in);                 <span class="cm">// читает один символ или EOF</span>
+fputc(c, out);  fprintf(out, "%d\n", n);
+fclose(in);                        <span class="cm">// каждый открытый файл обязательно закрыть</span></code></pre>
+  <p><strong>Почему <code>int c</code>, а не <code>char c</code>?</strong> <code>fgetc</code> возвращает либо код символа (0…255), либо особое значение <code>EOF</code> (обычно −1), означающее «конец файла». В <code>char</code> нельзя надёжно отличить <code>EOF</code> от символа с кодом 255.</p>
+  <p><code>ferror(f)</code> сообщает, была ли ошибка чтения, а <code>EOF</code> может означать и конец файла, и ошибку.</p>
+
+  <h3>8. enum и статус-коды</h3>
+  <pre><code>typedef enum {
+    STATUS_OK,              <span class="cm">// = 0</span>
+    STATUS_NULL_POINTER,    <span class="cm">// = 1</span>
+    STATUS_INVALID_NUMBER,  <span class="cm">// = 2 ...</span>
+    STATUS_OVERFLOW
+} Status;</code></pre>
+  <p><code>enum</code> — набор именованных целых констант. <code>typedef</code> даёт типу короткое имя <code>Status</code>. Каждая функция возвращает <code>Status</code>, а вызывающий код разбирает его через <code>switch</code> или <code>if</code>. Это прямое требование задания.</p>
+
+  <h3>9. const</h3>
+  <p><code>const</code> запрещает менять значение. <code>const long x</code> — функция не изменит свой параметр. <code>const char *str</code> — функция не изменит символы строки. Требование задания: ставить <code>const</code> везде, где изменение не нужно. Это защищает от случайных ошибок и сразу показывает читателю, что функция только читает данные.</p>
+
+  <h3>10. Перевод строки в число: strtol / strtod</h3>
+  <pre><code>errno = 0;
+value = strtol(str, &amp;end, 10);   <span class="cm">// 10 — основание</span>
+if (*end != '\0')    → в строке есть лишние символы ("12abc")
+if (errno == ERANGE) → число не помещается в long</code></pre>
+  <p><code>end</code> после вызова указывает на первый символ, который не удалось разобрать. Если строка корректная, это её конец (<code>'\0'</code>). <code>atoi</code> не используется: он не сообщает об ошибках (<code>atoi("abc")</code> молча вернёт 0).</p>
+
+  <h3>11. Сравнение вещественных чисел через eps</h3>
+  <p>Компьютер хранит <code>double</code> в двоичном виде, и большинство десятичных дробей представимо только приблизительно: <code>0.1 + 0.2</code> даёт <code>0.30000000000000004</code>. Поэтому <code>a == b</code> для дробных чисел ненадёжно, и сравнивают так:</p>
+  <pre><code>fabs(a - b) &lt; eps   <span class="cm">// a и b «равны» с точностью eps</span></code></pre>
+  <p>По требованию задания eps всегда передаётся в функцию параметром.</p>
+
+  <h3>12. Указатель на функцию</h3>
+  <pre><code>double (*f)(double)       <span class="cm">// f — указатель на функцию, принимающую и возвращающую double</span>
+bisection(&amp;root, cos_minus_x, 0.0, 1.0, 1e-6);   <span class="cm">// передаём функцию как параметр</span></code></pre>
+  <p>Позволяет написать один алгоритм (дихотомию, интеграл, подсчёт символов) и применять его к разным функциям. Используется в заданиях 2, 4, 5, 6.</p>
+
+  <h3>13. Переменное число аргументов</h3>
+  <p>Разобрано в <a href="#t6">задании 6</a>.</p>
+</section>
+
+<section class="block" id="rules">
+  <div class="sec-head"><h2>Общие требования и как они выполнены</h2><label class="done"><input type="checkbox" data-id="rules"> Разобрался</label></div>
+  <p>Почти наверняка спросят хотя бы про несколько пунктов. Вот что требуется, где это в коде и почему так.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Требование</th><th>Как выполнено</th></tr>
+    <tr><td>Не падать аварийно</td><td>Все входные данные проверяются, указатели проверяются на <code>NULL</code>, переполнение проверяется до вычисления, деление на ноль невозможно.</td></tr>
+    <tr><td>Нет <code>exit()</code> вне <code>main</code></td><td>Функции никогда не завершают программу сами: они возвращают статус, а решает <code>main</code> (<code>return 1</code>). Иначе нельзя было бы освободить память и закрыть файлы.</td></tr>
+    <tr><td>Разделение логики и ввода-вывода</td><td>Функции вычисляют и возвращают результат через параметры, а печатает только <code>main</code> или отдельные функции <code>print_...</code>. Например, <code>find_multiples</code> заполняет массив, а печатает <code>main</code>.</td></tr>
+    <tr><td>Валидация ввода</td><td>Количество аргументов (<code>argc</code>), формат флага, корректность чисел (<code>strtol</code> + <code>end</code> + <code>errno</code>), допустимые диапазоны.</td></tr>
+    <tr><td>Контроль памяти</td><td>Проверка каждого <code>malloc</code>/<code>realloc</code>, <code>free</code> на всех путях выхода.</td></tr>
+    <tr><td>Ошибки файлов</td><td>Проверка результата <code>fopen</code>, все файлы закрываются, в том числе при ошибке.</td></tr>
+    <tr><td>Нет глобальных переменных</td><td>Все данные передаются через параметры. <code>#define</code> — это не переменные, а константы, подставляемые до компиляции.</td></tr>
+    <tr><td>Статус-коды</td><td><code>typedef enum { ... } Status</code>, обработка через <code>switch</code>/<code>if</code>.</td></tr>
+    <tr><td>eps как параметр</td><td>Все функции, сравнивающие <code>double</code>, принимают <code>eps</code>.</td></tr>
+    <tr><td><code>const</code></td><td>На всех параметрах, которые функция не меняет.</td></tr>
+  </table></div>
+  <div class="qa">
+    <details><summary>Почему глобальные переменные — это плохо?</summary><div class="ans"><p>Их может изменить любая функция, поэтому трудно понять, кто и когда поменял значение. Функции с глобальными переменными нельзя использовать независимо и сложно тестировать. Передача через параметры делает зависимости явными.</p></div></details>
+    <details><summary>Почему нельзя вызывать exit() из функции?</summary><div class="ans"><p>Программа завершится сразу, и вызывающий код не успеет освободить память, закрыть файлы или вывести понятное сообщение. Кроме того, функцию с <code>exit()</code> нельзя переиспользовать: она решает за вызывающего, что ошибка фатальная.</p></div></details>
+    <details><summary>Что такое #define и чем отличается от переменной?</summary><div class="ans"><p>Это директива препроцессора: до компиляции каждое вхождение имени заменяется на текст. <code>#define MAX_POWER 10</code> — просто подстановка числа 10, в памяти ничего не хранится и изменить это значение нельзя.</p></div></details>
+    <details><summary>Зачем проверять параметры на NULL, если мы сами вызываем функцию правильно?</summary><div class="ans"><p>Функция должна быть корректной сама по себе, независимо от того, кто её вызывает. Это требование задания: валидировать все параметры функций. Защита от NULL не даёт программе упасть при ошибке в вызывающем коде.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t1">
+  <div class="sec-head"><div><h2>Задание 1. Флаги и число x</h2><div class="kicker">task1.c · без динамической памяти</div></div><label class="done"><input type="checkbox" data-id="t1"> Разобрался</label></div>
+  <p>Программа получает число x и флаг, который говорит, что с числом сделать.</p>
+  <pre><code>.\task1.exe 15 -h     <span class="cm">кратные 15 до 100: 15 30 45 60 75 90</span>
+.\task1.exe 7 -p      <span class="cm">7 - простое число</span>
+.\task1.exe 255 -s    <span class="cm">F F</span>
+.\task1.exe 3 -e      <span class="cm">таблица степеней</span>
+.\task1.exe 100 -a    <span class="cm">5050</span>
+.\task1.exe 20 -f     <span class="cm">2432902008176640000</span></code></pre>
+
+  <h3>Как устроен main</h3>
+  <ol class="steps">
+    <li>Проверяем <code>argc != 3</code>: нужно ровно два аргумента.</li>
+    <li><code>parse_long</code> превращает строку в число.</li>
+    <li>Проверяем флаг: первый символ <code>-</code> или <code>/</code>, затем ровно одна буква (<code>flag[2] == '\0'</code>).</li>
+    <li><code>switch (flag[1])</code> выбирает действие. Для каждого: вызвать функцию, проверить статус, напечатать результат.</li>
+  </ol>
+
+  <h3>Функции и алгоритмы</h3>
+  <h4>find_multiples (-h)</h4>
+  <pre><code>for (i = x; i &lt;= 100; i += x)  →  x, 2x, 3x, ... до 100</code></pre>
+  <p>Шаг равен x, поэтому перебираются сразу только кратные. При x ≤ 0 возвращается ошибка: при x = 0 цикл стал бы бесконечным.</p>
+  <h4>check_prime (-p)</h4>
+  <p>Простое — натуральное число больше 1, делящееся только на 1 и на себя. Составное — больше 1 и имеет другие делители. 0 и 1 не относятся ни к тем, ни к другим.</p>
+  <pre><code>for (i = 2; i &lt;= x / i; i++)   <span class="cm">// то же, что i*i &lt;= x, но без переполнения</span>
+    if (x % i == 0) → составное</code></pre>
+  <p><strong>Почему достаточно проверять до √x?</strong> Если x = a·b и оба множителя больше √x, то a·b &gt; x. Значит, хотя бы один делитель не больше √x.</p>
+  <h4>split_hex (-s)</h4>
+  <p>Перевод в 16-ю систему делением с остатком: остаток от деления на 16 — младшая цифра, частное делим дальше. Цифры получаются от младших к старшим, поэтому массив потом разворачивается.</p>
+  <pre><code>255 / 16 = 15, остаток 15 → F
+ 15 / 16 =  0, остаток 15 → F      итог: FF</code></pre>
+  <p>Отрицательное число переводится через <code>0UL - (unsigned long)x</code>. Так модуль вычисляется даже для самого маленького <code>long</code>, у которого <code>-x</code> не помещается в тип.</p>
+  <h4>power_table (-e)</h4>
+  <p>Таблица 10 × x. Каждая следующая степень — предыдущая, умноженная на основание: <code>table[b][e] = table[b][e-1] * base</code>. Тип <code>long long</code> нужен потому, что 10¹⁰ не помещается в <code>int</code> (максимум ≈ 2.1·10⁹).</p>
+  <h4>sum_to (-a)</h4>
+  <p>Формула Гаусса: 1 + 2 + … + x = x(x+1)/2. Одно из чисел x и x+1 всегда чётное, его делим на 2 <em>до</em> умножения, затем проверяем переполнение.</p>
+  <h4>factorial (-f)</h4>
+  <p>Умножаем 2·3·…·x, перед каждым умножением проверяем переполнение. 20! — наибольший факториал, помещающийся в <code>unsigned long long</code>, поэтому 21! даёт ошибку. 0! = 1.</p>
+
+  <div class="qa">
+    <details><summary>Что будет, если запустить без аргументов или с тремя?</summary><div class="ans"><p>Проверка <code>argc != 3</code> выведет подсказку по использованию и <code>return 1</code>.</p></div></details>
+    <details><summary>Как программа проверяет, что x — именно число?</summary><div class="ans"><p><code>strtol</code> разбирает строку и возвращает в <code>end</code> место, где разбор остановился. Если там не конец строки (<code>*end != '\0'</code>), значит, есть лишние символы. <code>errno == ERANGE</code> — число не влезло в <code>long</code>. Пустая строка и строка, начинающаяся с пробела, отсекаются отдельно.</p></div></details>
+    <details><summary>Почему x / i, а не i * i ≤ x?</summary><div class="ans"><p>При x близком к максимуму <code>long</code> произведение <code>i * i</code> может переполниться. Деление переполниться не может.</p></div></details>
+    <details><summary>Почему 1 не простое?</summary><div class="ans"><p>По определению у простого ровно два различных делителя: 1 и само число. У единицы делитель один. Иначе нарушилась бы единственность разложения на простые множители.</p></div></details>
+    <details><summary>Как проверяется переполнение факториала?</summary><div class="ans"><p>Перед <code>value *= i</code> проверяется <code>value &gt; ULLONG_MAX / i</code>. Если это так, произведение больше максимума, и функция возвращает <code>STATUS_OVERFLOW</code> до умножения.</p></div></details>
+    <details><summary>Как сделать, чтобы -h искал кратные до 1000?</summary><div class="ans"><p>Поменять <code>#define MAX_MULTIPLE 100</code> на 1000. Этот же макрос задаёт размер массива <code>multiples</code>, так что места хватит автоматически.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t3">
+  <div class="sec-head"><div><h2>Задание 3. Уравнения, кратность, треугольник</h2><div class="kicker">task3.c · без динамической памяти</div></div><label class="done"><input type="checkbox" data-id="t3"> Разобрался</label></div>
+  <pre><code>.\task3.exe -q 0.0001 1 -3 2     <span class="cm">решения при всех перестановках a, b, c</span>
+.\task3.exe -m 10 5              <span class="cm">10 кратно 5</span>
+.\task3.exe -t 0.0001 3 4 5      <span class="cm">прямоугольный треугольник</span></code></pre>
+  <p>Количество аргументов зависит от флага: для <code>-q</code> и <code>-t</code> <code>argc</code> должен быть 6, для <code>-m</code> — 4.</p>
+
+  <h3>-q: квадратное уравнение</h3>
+  <p>Коэффициенты (a, b, c) можно расставить 3! = 6 способами. Порядки перечислены в массиве <code>orders</code>. Одинаковые перестановки (например, при a = b) пропускаются: сравнение с уже решёнными через eps.</p>
+  <p><code>solve_quadratic</code> разбирает случаи:</p>
+  <ul>
+    <li>|a| &lt; eps — уравнение не квадратное, а линейное: bx + c = 0. Если и b ≈ 0, то либо корней нет (c ≠ 0), либо подходит любое x (c = 0).</li>
+    <li>D = b² − 4ac. |D| &lt; eps — один корень −b/(2a); D &lt; 0 — нет действительных корней; D &gt; 0 — два корня (−b ± √D)/(2a).</li>
+  </ul>
+  <p>Результат хранится в структуре <code>Equation</code>: коэффициенты, тип ответа (<code>RootsType</code>) и корни.</p>
+
+  <h3>-m: кратность</h3>
+  <p>a кратно b, если a % b == 0. Ноль запрещён условием. Особый случай b = −1: выражение <code>LONG_MIN % -1</code> в C вызывает переполнение и может уронить программу, поэтому этот случай обрабатывается отдельно (на −1 делится всё).</p>
+
+  <h3>-t: прямоугольный треугольник</h3>
+  <p>Стороны должны быть положительными. Наибольшая ставится в c, затем проверяется теорема Пифагора: |a² + b² − c²| &lt; eps.</p>
+
+  <div class="qa">
+    <details><summary>Зачем сравнивать a с eps, а не с нулём?</summary><div class="ans"><p>Число, введённое как 0.0000000001, на практике может быть результатом погрешности. Сравнение <code>a == 0</code> для <code>double</code> ненадёжно, а условие задания прямо требует eps.</p></div></details>
+    <details><summary>Почему перестановок 6, а выводится иногда меньше?</summary><div class="ans"><p>Если два коэффициента равны, некоторые перестановки дают одно и то же уравнение. Задание просит только уникальные, поэтому повторы пропускаются (<code>is_same_coefficients</code>).</p></div></details>
+    <details><summary>Что такое struct?</summary><div class="ans"><p>Структура объединяет несколько полей разных типов в одну переменную. Доступ через точку (<code>eq.a</code>) или, если есть указатель, через стрелку (<code>eq-&gt;a</code>, то же самое, что <code>(*eq).a</code>).</p></div></details>
+    <details><summary>Что в коде означает «+ 0.0» после формулы корня?</summary><div class="ans"><p>В <code>double</code> существует «минус ноль» (−0). Он появляется, например, при −0/5, и печатается как <code>-0</code>. Прибавление 0.0 превращает −0 в обычный 0, чтобы вывод был аккуратным.</p></div></details>
+    <details><summary>Почему стороны сортируются перед проверкой?</summary><div class="ans"><p>Гипотенуза — самая длинная сторона, а пользователь мог ввести стороны в любом порядке (например, 5 3 4). После сортировки c — наибольшая, и формулу можно применять напрямую.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t9">
+  <div class="sec-head"><div><h2>Задание 9. Случайные массивы</h2><div class="kicker">task9.c · malloc, qsort, бинарный поиск</div></div><label class="done"><input type="checkbox" data-id="t9"> Разобрался</label></div>
+  <pre><code>.\task9.exe -10 10</code></pre>
+
+  <h3>Часть 1: обмен минимума и максимума</h3>
+  <p>Массив из 20 элементов заполняется случайными числами из [a..b]. <code>swap_min_max</code> за один проход запоминает <strong>индексы</strong> минимума и максимума, затем меняет эти элементы местами через временную переменную.</p>
+
+  <h3>Случайные числа</h3>
+  <p><code>rand()</code> выдаёт псевдослучайные числа от 0 до <code>RAND_MAX</code>. <code>srand(time(NULL))</code> задаёт начальное значение по текущему времени, иначе при каждом запуске последовательность была бы одинаковой.</p>
+  <p>В Windows <code>RAND_MAX</code> = 32767, этого мало для больших диапазонов. Поэтому <code>random_in_range</code> склеивает 4 вызова в одно большое число и берёт остаток от деления на длину диапазона: <code>a + random % (b − a + 1)</code>.</p>
+
+  <h3>Часть 2: массив C</h3>
+  <p>Размеры A и B случайные из [10..10000], поэтому память выделяется через <code>malloc</code>. Для каждого A[i] нужно найти ближайшее значение в B.</p>
+  <ol class="steps">
+    <li>Копия B сортируется функцией <code>qsort</code> за O(m log m).</li>
+    <li>Для каждого A[i] бинарный поиск (<code>find_closest</code>) находит первый элемент ≥ A[i]. Ближайший — либо он, либо предыдущий.</li>
+    <li>C[i] = A[i] + найденный элемент.</li>
+  </ol>
+  <p>Итого O((n + m) log m) вместо O(n·m) при наивном переборе. При 10000 × 10000 это примерно 270 тысяч операций против 100 миллионов.</p>
+
+  <div class="qa">
+    <details><summary>Как работает бинарный поиск?</summary><div class="ans"><p>В отсортированном массиве берём средний элемент. Если он меньше искомого, ответ правее, и отбрасываем левую половину; иначе отбрасываем правую. За каждый шаг область поиска вдвое меньше, поэтому шагов примерно log₂(m), для 10000 элементов около 14.</p></div></details>
+    <details><summary>Что такое compare_ints и почему не return a - b?</summary><div class="ans"><p><code>qsort</code> универсальная: она не знает тип элементов и получает функцию сравнения через указатель. Функция должна вернуть отрицательное число, 0 или положительное. <code>a - b</code> может переполниться (например, 2·10⁹ − (−2·10⁹)). Выражение <code>(a &gt; b) - (a &lt; b)</code> всегда даёт −1, 0 или 1.</p></div></details>
+    <details><summary>Почему сортируется копия B, а не сам B?</summary><div class="ans"><p>Чтобы не менять исходные данные: функция получает B как <code>const int b[]</code> и не имеет права его изменять.</p></div></details>
+    <details><summary>Где освобождается память?</summary><div class="ans"><p>Копия B — внутри <code>build_array_c</code>. A, B, C — в конце <code>main</code>. Если C выделить не удалось, A и B освобождаются перед выходом с ошибкой.</p></div></details>
+    <details><summary>Почему «псевдо»случайные?</summary><div class="ans"><p>Числа вычисляются по детерминированной формуле из начального значения (seed). При одном и том же seed последовательность всегда одна и та же.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t10">
+  <div class="sec-head"><div><h2>Задание 10. Числа в системе счисления</h2><div class="kicker">task10.c · ввод с консоли, динамический буфер</div></div><label class="done"><input type="checkbox" data-id="t10"> Разобрался</label></div>
+  <pre><code>.\task10.exe
+16
+1A -FF 0010 7FFF
+Stop</code></pre>
+  <p>Сначала вводится основание, затем числа до строки <code>Stop</code>. Программа находит максимальное по модулю число и сумму, затем печатает их в исходной системе и в системах 9, 18, 27, 36.</p>
+
+  <h3>Перевод строки в число (parse_number)</h3>
+  <p>Схема Горнера: идём по цифрам слева направо, <code>value = value * base + digit</code>.</p>
+  <pre><code>"1A" в 16-й:  0·16 + 1 = 1;  1·16 + 10 = 26</code></pre>
+  <p>Перед каждым шагом проверяется переполнение. Буквы допускаются только заглавные, как требует условие; цифра должна быть меньше основания.</p>
+
+  <h3>Перевод числа в строку (to_base)</h3>
+  <p>Остатки от деления на основание дают цифры от младшей к старшей, поэтому они записываются в обратном порядке. Ведущих нулей не бывает по построению.</p>
+
+  <h3>Тонкости</h3>
+  <ul>
+    <li><strong>Модуль минимального числа.</strong> <code>long long</code> хранит числа от −2⁶³ до 2⁶³−1, поэтому у −2⁶³ нет положительной пары, и <code>llabs</code> переполнится. Функция <code>absolute</code> возвращает модуль как <code>unsigned long long</code>.</li>
+    <li><strong>Переполнение суммы</strong> проверяется до сложения в <code>add_number</code>.</li>
+    <li><strong>Слова любой длины.</strong> <code>read_token</code> читает слово в динамический буфер, который удваивается через <code>realloc</code>.</li>
+    <li>Некорректное число не останавливает ввод: выводится сообщение, и число пропускается.</li>
+  </ul>
+
+  <div class="qa">
+    <details><summary>Переведите 26 в 9-ю систему вручную.</summary><div class="ans"><p>26 / 9 = 2, остаток 8; 2 / 9 = 0, остаток 2. Читаем остатки снизу вверх: <code>28</code>. Проверка: 2·9 + 8 = 26.</p></div></details>
+    <details><summary>Почему максимальная система — 36?</summary><div class="ans"><p>Для цифр используются 10 арабских цифр и 26 латинских букв: 10 + 26 = 36.</p></div></details>
+    <details><summary>Как проверить переполнение при value * base + digit?</summary><div class="ans"><p>Условие <code>value &gt; (limit - digit) / base</code>. Если оно выполнено, результат превысит limit. Для отрицательных чисел limit на 1 больше: модуль −2⁶³ равен 2⁶³.</p></div></details>
+    <details><summary>Что будет, если ввод кончится без Stop?</summary><div class="ans"><p><code>read_token</code> вернёт <code>STATUS_END_OF_FILE</code>, цикл завершится, программа сообщит об этом и выведет результат по введённым числам. В консоли конец ввода — Ctrl+Z, затем Enter.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t4">
+  <div class="sec-head"><div><h2>Задание 4. Обработка файла по флагу</h2><div class="kicker">task4.c · файлы, malloc, указатель на функцию</div></div><label class="done"><input type="checkbox" data-id="t4"> Разобрался</label></div>
+  <pre><code>.\task4.exe -d tests\in4.txt                  <span class="cm">→ tests\out_in4.txt</span>
+.\task4.exe -ni tests\in4.txt tests\res.txt   <span class="cm">→ tests\res.txt</span></code></pre>
+  <div class="table-wrap"><table>
+    <tr><th>Флаг</th><th>Действие</th></tr>
+    <tr><td><code>-d</code></td><td>Удалить цифры.</td></tr>
+    <tr><td><code>-i</code></td><td>Для каждой строки — количество латинских букв.</td></tr>
+    <tr><td><code>-s</code></td><td>Для каждой строки — количество символов, кроме латинских букв, цифр и пробела.</td></tr>
+    <tr><td><code>-a</code></td><td>Всё, кроме цифр, заменить hex-кодом ASCII (<code>A</code> → <code>41</code>).</td></tr>
+  </table></div>
+  <p>Буква <code>n</code> после <code>-</code> означает, что путь выходного файла задан третьим аргументом. Без неё имя создаётся как <code>out_</code> + имя входного файла.</p>
+
+  <h3>Как устроено</h3>
+  <ul>
+    <li><code>parse_flag</code> разбирает флаг: определяет действие и есть ли <code>n</code>.</li>
+    <li><code>make_output_name</code> вставляет <code>out_</code> перед <strong>именем файла</strong>, а не перед всем путём: <code>tests\in4.txt</code> → <code>tests\out_in4.txt</code>. Для этого ищется последний <code>/</code> или <code>\</code>. Память под новую строку: длина входа + 4 символа префикса + 1 под <code>'\0'</code>.</li>
+    <li>Если входной и выходной пути совпадают, программа выдаёт ошибку: <code>fopen(..., "w")</code> очистил бы входной файл раньше, чем мы его прочитали.</li>
+    <li>Обработка посимвольная: <code>fgetc</code> → решение → <code>fputc</code>/<code>fprintf</code>.</li>
+    <li><code>count_in_lines</code> одна на два флага: что считать, решает переданная функция (<code>is_latin</code> или <code>is_special</code>). Это и есть указатель на функцию.</li>
+    <li>Последняя строка без <code>\n</code> в конце тоже учитывается (флаг <code>has_chars</code>).</li>
+  </ul>
+
+  <div class="qa">
+    <details><summary>Почему буквы проверяются диапазонами, а не isalpha?</summary><div class="ans"><p>Нужны именно латинские буквы. <code>isalpha</code> зависит от локали и может считать буквами другие символы. Сравнение <code>c &gt;= 'a' &amp;&amp; c &lt;= 'z'</code> работает, потому что латинские буквы идут в ASCII подряд.</p></div></details>
+    <details><summary>Что такое ASCII?</summary><div class="ans"><p>Таблица, ставящая символам числа 0–127: '0' = 48, 'A' = 65, 'a' = 97, пробел = 32, перевод строки = 10. Русские буквы в ASCII не входят и в UTF-8 занимают 2 байта, поэтому с <code>-a</code> каждая даёт два hex-кода.</p></div></details>
+    <details><summary>Что значит %02X?</summary><div class="ans"><p>Шестнадцатеричное число заглавными буквами, минимум 2 знака с ведущим нулём: 10 → <code>0A</code>. Без этого перевод строки выглядел бы как <code>A</code> и сливался с соседями.</p></div></details>
+    <details><summary>Что если входного файла нет?</summary><div class="ans"><p><code>fopen</code> вернёт <code>NULL</code>, программа выведет ошибку, освободит память под имя выходного файла и вернёт 1.</p></div></details>
+    <details><summary>Почему в is_special исключён '\r'?</summary><div class="ans"><p>В Windows строки заканчиваются парой <code>\r\n</code>. Чтобы невидимый <code>\r</code> не попадал в подсчёт «особых» символов, он исключён.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t8">
+  <div class="sec-head"><div><h2>Задание 8. Минимальное основание</h2><div class="kicker">task8.c · файлы, лексемы, структура</div></div><label class="done"><input type="checkbox" data-id="t8"> Разобрался</label></div>
+  <pre><code>.\task8.exe tests\in8.txt tests\o8.txt
+<span class="cm">вход: 0001 zz -7F     выход:  1 2 1 / zz 36 1295 / -7F 16 -127</span></code></pre>
+  <p>Для каждого числа из файла нужно вывести само число без ведущих нулей, минимальное основание, в котором оно корректно, и его значение в десятичной системе.</p>
+
+  <h3>Идея</h3>
+  <p>Цифра должна быть меньше основания. Значит, минимальное основание = (самая большая цифра) + 1, но не меньше 2.</p>
+  <pre><code>"7F": цифры 7 и 15 → max = 15 → основание 16
+"0":  max = 0 → но оснований меньше 2 нет → 2</code></pre>
+  <h3>Как устроено</h3>
+  <ul>
+    <li><code>read_token</code> читает слова, разделённые пробелами, табуляциями и переводами строк, в динамический буфер.</li>
+    <li><code>analyze_number</code>: знак, проверка символов и поиск максимальной цифры, пропуск ведущих нулей (сдвигом указателя, без копирования), перевод схемой Горнера с проверкой переполнения.</li>
+    <li>Результат собирается в структуру <code>Number</code>, <code>write_number</code> пишет его в файл. Логика отделена от вывода.</li>
+    <li>Строчные и прописные буквы одинаковы: <code>a</code> и <code>A</code> — обе цифра 10.</li>
+    <li>При некорректной лексеме (<code>ab#</code>) программа сообщает, какая лексема плохая, и останавливается.</li>
+  </ul>
+  <div class="qa">
+    <details><summary>Почему у "0000" остаётся один ноль?</summary><div class="ans"><p>Цикл пропуска нулей останавливается, когда следующий символ — конец строки (<code>*(token + 1) != '\0'</code>). Иначе от числа осталась бы пустая строка.</p></div></details>
+    <details><summary>Кто освобождает плохую лексему?</summary><div class="ans"><p><code>process_file</code> отдаёт её через параметр <code>bad_token</code>, чтобы <code>main</code> мог её напечатать, а потом <code>main</code> вызывает <code>free(bad_token)</code>. Если плохой лексемы не было, там <code>NULL</code>, и <code>free(NULL)</code> безопасен.</p></div></details>
+    <details><summary>Какое максимальное число можно обработать?</summary><div class="ans"><p>До 2⁶⁴ − 1 (<code>unsigned long long</code>). Например, в 36-й системе это около 12–13 символов. Больше — ошибка переполнения.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t7">
+  <div class="sec-head"><div><h2>Задание 7. Лексемы из файлов</h2><div class="kicker">task7.c · файлы, realloc, системы счисления</div></div><label class="done"><input type="checkbox" data-id="t7"> Разобрался</label></div>
+  <pre><code>.\task7.exe -r tests\a7.txt tests\b7.txt tests\o7r.txt
+.\task7.exe -a tests\c7.txt tests\o7a.txt</code></pre>
+  <p>Лексема — последовательность символов без пробелов, табуляций и переводов строк (то есть «слово»).</p>
+
+  <h3>read_token — чтение слова любой длины</h3>
+  <ol class="steps">
+    <li>Пропустить пробельные символы (<code>isspace</code>).</li>
+    <li>Читать символы до следующего пробельного или EOF, складывая в буфер.</li>
+    <li>Если буфер заполнен, удвоить его через <code>realloc</code>. Удвоение даёт мало перевыделений: для слова длиной 1000 их около 6.</li>
+    <li>Дописать <code>'\0'</code>. Если ничего не прочитано — <code>STATUS_END_OF_FILE</code>.</li>
+  </ol>
+  <p>Один и тот же буфер используется для всех слов и освобождается в конце.</p>
+
+  <h3>-r: чередование</h3>
+  <p>Цикл: пока хотя бы в одном файле есть слова, берём слово из первого (если есть), затем из второго (если есть). Когда один файл кончился, просто продолжают выводиться слова из другого.</p>
+  <pre><code>a7: one two three four five   b7: A B C D E F G
+→   one A two B three C four D five E F G</code></pre>
+
+  <h3>-a: преобразование</h3>
+  <p>Нумерация лексем с 1. Порядок проверок важен: 10 делится и на 2, и на 5, поэтому «каждая десятая» проверяется <strong>первой</strong>.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Номер</th><th>Что делаем</th><th>Пример</th></tr>
+    <tr><td>делится на 10</td><td>в нижний регистр, затем ASCII-коды в 4-й системе</td><td><code>Ten</code> → t=116, e=101, n=110 → <code>131012111232</code></td></tr>
+    <tr><td>чётный</td><td>в нижний регистр</td><td><code>World</code> → <code>world</code></td></tr>
+    <tr><td>делится на 5</td><td>ASCII-коды в 8-й системе</td><td><code>A</code> → 65 → <code>101</code></td></tr>
+    <tr><td>остальные</td><td>без изменений</td><td></td></tr>
+  </table></div>
+  <p>Перевод в систему — деление с остатком (<code>to_base</code>). Коды записываются подряд, без разделителей.</p>
+  <div class="qa">
+    <details><summary>Переведите 116 в 4-ю систему.</summary><div class="ans"><p>116/4 = 29 ост 0; 29/4 = 7 ост 1; 7/4 = 1 ост 3; 1/4 = 0 ост 1. Снизу вверх: <code>1310</code>. Проверка: 1·64 + 3·16 + 1·4 + 0 = 116.</p></div></details>
+    <details><summary>Как перевести заглавную букву в строчную без tolower?</summary><div class="ans"><p>В ASCII строчные буквы отстоят от заглавных на 32: 'A' = 65, 'a' = 97. В коде <code>c - 'A' + 'a'</code>.</p></div></details>
+    <details><summary>Сколько памяти нужно под преобразованную лексему?</summary><div class="ans"><p>Код символа (максимум 255) в 4-й системе занимает до 4 цифр (<code>3333</code>), в 8-й — до 3. Поэтому выделяется <code>длина * 4 + 1</code> — с запасом на любой случай плюс <code>'\0'</code>.</p></div></details>
+    <details><summary>Как убедиться, что между лексемами ровно один пробел?</summary><div class="ans"><p><code>write_token</code> ставит пробел <em>перед</em> каждой лексемой, кроме первой (флаг <code>is_first</code>). Поэтому лишнего пробела нет ни в начале, ни в конце.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t6">
+  <div class="sec-head"><div><h2>Задание 6. Функции с переменным числом аргументов</h2><div class="kicker">task6.c · stdarg, рекурсия, дихотомия</div></div><label class="done"><input type="checkbox" data-id="t6"> Разобрался</label></div>
+  <pre><code>.\task6.exe     <span class="cm">все примеры встроены в main</span></code></pre>
+
+  <h3>Как работает переменное число аргументов</h3>
+  <pre><code>#include &lt;stdarg.h&gt;
+Status polynomial(double *result, const double x, const int degree, ...) {
+    va_list args;
+    va_start(args, degree);              <span class="cm">// начать после последнего обычного параметра</span>
+    for (i = 0; i &lt;= degree; i++)
+        value = value * x + va_arg(args, double);   <span class="cm">// взять следующий аргумент</span>
+    va_end(args);                        <span class="cm">// обязательно завершить</span>
+}</code></pre>
+  <p>Функция сама не знает, сколько аргументов ей передали и каких они типов. Поэтому количество всегда передаётся обычным параметром (<code>count</code>, <code>degree</code>).</p>
+  <div class="warn"><strong>Самая частая ловушка</strong>Вещественные аргументы нужно передавать как <code>1.0</code>, а не <code>1</code>. В <code>...</code> целое передаётся как <code>int</code>, а <code>va_arg(args, double)</code> прочитает его как <code>double</code>, и получится мусор: компилятор это не проверит. А <code>float</code> при передаче в <code>...</code> автоматически превращается в <code>double</code>, поэтому читать нужно всегда <code>double</code>.</div>
+
+  <h3>1. Выпуклость многоугольника</h3>
+  <p>Для каждой вершины берётся векторное (косое) произведение двух соседних рёбер: <code>cross = e1.x·e2.y − e1.y·e2.x</code>. Знак показывает, в какую сторону поворот (налево или направо). Многоугольник выпуклый, если при обходе все повороты в одну сторону.</p>
+  <p>Дополнительно суммируются углы поворота (<code>atan2</code>). У выпуклого многоугольника сумма ровно 2π. Это отсекает самопересекающиеся фигуры вроде звезды: у неё повороты тоже в одну сторону, но сумма 4π.</p>
+
+  <h3>2. Многочлен — схема Горнера</h3>
+  <pre><code>2x³ − x + 4  =  ((2·x + 0)·x − 1)·x + 4</code></pre>
+  <p>n умножений вместо вычисления каждой степени отдельно.</p>
+
+  <h3>3. Числа Капрекара</h3>
+  <p>Число n — число Капрекара, если квадрат можно разрезать на две части, сумма которых равна n (правая часть не нулевая).</p>
+  <pre><code>45² = 2025  → 20 + 25 = 45 ✓
+297² = 88209 → 88 + 209 = 297 ✓</code></pre>
+  <p>В коде «разрезание» делается делением: <code>left = square / base^k</code>, <code>right = square % base^k</code> для k = 1, 2, … Числа больше 2³² − 1 отклоняются, иначе квадрат не поместится в <code>unsigned long long</code>.</p>
+
+  <h3>4. Среднее геометрическое</h3>
+  <p>(x₁·x₂·…·xₙ)^(1/n). Перемножение может переполниться, поэтому используется логарифм: exp((ln x₁ + … + ln xₙ)/n). Отрицательные числа — ошибка (корень чётной степени из отрицательного не определён).</p>
+
+  <h3>5. Быстрое возведение в степень (рекурсия)</h3>
+  <pre><code>xⁿ = (x^(n/2))²        если n чётно
+xⁿ = (x^(n/2))² · x    если n нечётно
+x⁰ = 1                 база рекурсии</code></pre>
+  <p>Каждый шаг уменьшает n вдвое, поэтому умножений O(log n): для n = 1000 около 10 шагов вместо 1000. Отрицательная степень: x⁻ⁿ = 1/xⁿ; при x ≈ 0 это деление на ноль, и возвращается ошибка.</p>
+
+  <h3>6. Метод дихотомии (деления пополам)</h3>
+  <p>Если непрерывная функция на концах отрезка имеет разные знаки, f(a)·f(b) ≤ 0, то внутри есть корень (теорема Больцано–Коши). Делим отрезок пополам и оставляем ту половину, где знаки снова разные. Повторяем, пока длина отрезка больше eps.</p>
+  <p>Число шагов ≈ log₂((b − a)/eps). Например, для [0, 2] и eps = 10⁻¹⁰ получается около 35 шагов.</p>
+
+  <div class="qa">
+    <details><summary>Что такое рекурсия и что такое база рекурсии?</summary><div class="ans"><p>Рекурсия — функция вызывает саму себя для меньшей задачи. База — случай, который решается без рекурсии (здесь n = 0 → 1). Без базы вызовы шли бы бесконечно, и стек переполнился бы.</p></div></details>
+    <details><summary>Почему дихотомия требует разных знаков на концах?</summary><div class="ans"><p>Только тогда гарантировано, что непрерывная функция где-то пересекает ноль. Если знаки одинаковые, корня может не быть или их может быть чётное число, и метод не знает, какую половину выбрать. В этом случае функция возвращает <code>STATUS_INVALID_INTERVAL</code>, как в примере x² − 2 на [2, 3].</p></div></details>
+    <details><summary>Почему n в fast_pow — unsigned int?</summary><div class="ans"><p>Для степени −2147483648 (<code>INT_MIN</code>) модуль 2147483648 не помещается в <code>int</code>. Перевод в <code>unsigned int</code> через <code>0U - (unsigned int)exponent</code> корректно даёт этот модуль.</p></div></details>
+    <details><summary>Что будет, если передать в is_convex меньше чисел, чем указано в count?</summary><div class="ans"><p>Это неопределённое поведение: <code>va_arg</code> прочитает мусор из памяти. У переменного числа аргументов нет проверки количества, за него отвечает вызывающий. Это главный недостаток механизма <code>...</code>.</p></div></details>
+    <details><summary>Почему 1 — число Капрекара?</summary><div class="ans"><p>1² = 1 = 0 + 1: левая часть пустая (0), правая 1, сумма 1. Это стандартное соглашение.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t5">
+  <div class="sec-head"><div><h2>Задание 5. Ряды и интегралы</h2><div class="kicker">task5.c · численные методы</div></div><label class="done"><input type="checkbox" data-id="t5"> Разобрался</label></div>
+  <pre><code>.\task5.exe 0.000001 0.5      <span class="cm">eps и x</span></code></pre>
+  <p>x передаётся вторым аргументом: ряды зависят от x, а в условии не сказано, откуда его брать.</p>
+
+  <h3>Ряды: следующий член через предыдущий</h3>
+  <p>Считать каждый член по формуле, с факториалами, плохо: 171! уже не помещается в <code>double</code>, и это медленно. Поэтому вычисляется отношение соседних членов, и каждый следующий получается умножением предыдущего:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Ряд</th><th>Множитель aₙ₊₁/aₙ</th><th>Чему равна сумма</th></tr>
+    <tr><td>a. xⁿ/n!</td><td>x/(n+1)</td><td>eˣ</td></tr>
+    <tr><td>b. (−1)ⁿx²ⁿ/(2n)!</td><td>−x²/((2n+1)(2n+2))</td><td>cos x</td></tr>
+    <tr><td>c. 3³ⁿ(n!)³x²ⁿ/(3n)!</td><td>9(n+1)²x²/((3n+1)(3n+2))</td><td>сходится при |x| &lt; 1</td></tr>
+    <tr><td>d. (−1)ⁿ(2n−1)!!x²ⁿ/(2n)!!</td><td>−(2n+1)x²/(2n+2)</td><td>1/√(1+x²) − 1, при |x| &lt; 1</td></tr>
+  </table></div>
+  <p>Суммирование останавливается, когда очередной член по модулю меньше eps. Для рядов c и d проверяется |x| &lt; 1: при |x| ≥ 1 множитель не меньше 1, члены не убывают, и ряд расходится (признак Даламбера).</p>
+  <p>Для ряда a при большом x члены сначала растут (пока n &lt; x), поэтому условие остановки требует ещё и n &gt; |x|. При очень больших x (например, 1000) сумма переполняет <code>double</code>, и выводится ошибка.</p>
+
+  <h3>Интегралы: метод средних прямоугольников</h3>
+  <p>Отрезок [0, 1] делится на n частей, на каждой высота прямоугольника — значение функции в середине части. Сумма площадей приближает интеграл.</p>
+  <p>n удваивается (1, 2, 4, 8, …), пока результат при n и при 2n не станет отличаться меньше чем на eps.</p>
+  <p><strong>Почему именно средние прямоугольники:</strong> функция не вычисляется на концах отрезка. А там у двух функций проблемы: ln(1+x)/x при x = 0 даёт 0/0, а ln(1/(1−x)) при x = 1 уходит в бесконечность. Интеграл при этом конечен.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Интеграл</th><th>Точное значение</th></tr>
+    <tr><td>a. ∫ ln(1+x)/x</td><td>π²/12 ≈ 0.822467</td></tr>
+    <tr><td>b. ∫ e^(−x²/2)</td><td>≈ 0.855624</td></tr>
+    <tr><td>c. ∫ ln(1/(1−x))</td><td>1</td></tr>
+    <tr><td>d. ∫ xˣ</td><td>≈ 0.783431</td></tr>
+  </table></div>
+  <div class="qa">
+    <details><summary>Что значит «вычислить с точностью eps»?</summary><div class="ans"><p>Ошибка результата должна быть не больше eps. На практике останавливаемся, когда очередное уточнение меняет результат меньше чем на eps: члены ряда меньше eps или интегралы при n и 2n отличаются меньше чем на eps.</p></div></details>
+    <details><summary>Какие ещё есть методы численного интегрирования?</summary><div class="ans"><p>Левые и правые прямоугольники, трапеции, метод Симпсона (парабол). Симпсон точнее на гладких функциях, но вычисляет значения на концах отрезка, а здесь это опасно.</p></div></details>
+    <details><summary>Почему у задания есть ограничение на число итераций?</summary><div class="ans"><p>Если eps очень маленький (меньше точности <code>double</code>, около 10⁻¹⁶), условие остановки может не выполниться никогда, и программа зависнет. Ограничение гарантирует завершение: тогда возвращается <code>STATUS_ITERATION_LIMIT</code>.</p></div></details>
+    <details><summary>Что такое двойной факториал?</summary><div class="ans"><p>Произведение чисел той же чётности: 7!! = 7·5·3·1 = 105, 8!! = 8·6·4·2 = 384.</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="t2">
+  <div class="sec-head"><div><h2>Задание 2. Константы e, π, ln 2, √2, γ</h2><div class="kicker">task2.c · самое математическое</div></div><label class="done"><input type="checkbox" data-id="t2"> Разобрался</label></div>
+  <pre><code>.\task2.exe 0.0001</code></pre>
+  <p>Для каждой из 5 констант три способа вычисления: предел, ряд и уравнение. Итого 15 функций с одинаковой сигнатурой <code>Status f(double eps, double *result)</code>. В <code>main</code> они собраны в таблицу указателей на функции <code>methods[5][3]</code> и вызываются в двойном цикле.</p>
+
+  <h3>Три способа и критерии остановки</h3>
+  <div class="table-wrap"><table>
+    <tr><th>Способ</th><th>Как считаем</th><th>Когда останавливаемся</th></tr>
+    <tr><td>Предел</td><td>Вычисляем выражение при растущем n (удваиваем n).</td><td>Значения при n и 2n отличаются меньше чем на eps.</td></tr>
+    <tr><td>Ряд</td><td>Складываем члены.</td><td>Очередной член меньше eps.</td></tr>
+    <tr><td>Уравнение</td><td>Ищем корень дихотомией на отрезке, где он точно есть.</td><td>Длина отрезка меньше eps.</td></tr>
+  </table></div>
+
+  <h3>Константы</h3>
+  <div class="table-wrap"><table>
+    <tr><th></th><th>Предел</th><th>Ряд</th><th>Уравнение</th></tr>
+    <tr><td>e ≈ 2.71828</td><td>(1 + 1/n)ⁿ</td><td>Σ 1/n!</td><td>ln x = 1 на [2, 3]</td></tr>
+    <tr><td>π ≈ 3.14159</td><td>(2ⁿn!)⁴ / (n((2n)!)²)</td><td>4·Σ(−1)ⁿ⁻¹/(2n−1)</td><td>cos x = −1 на [2, 4]</td></tr>
+    <tr><td>ln 2 ≈ 0.69315</td><td>n(2^(1/n) − 1)</td><td>Σ(−1)ⁿ⁻¹/n</td><td>eˣ = 2 на [0, 1]</td></tr>
+    <tr><td>√2 ≈ 1.41421</td><td>xₙ₊₁ = xₙ − xₙ²/2 + 1</td><td>∏ 2^(2⁻ᵏ)</td><td>x² = 2 на [1, 2]</td></tr>
+    <tr><td>γ ≈ 0.57722</td><td>Σ C(m,k)(−1)ᵏ/k · ln(k!)</td><td>−π²/6 + Σ(1/⌊√k⌋² − 1/k)</td><td>e⁻ˣ = lim ln t·∏(p−1)/p</td></tr>
+  </table></div>
+
+  <h3>Интересные места кода, о которых могут спросить</h3>
+  <ul>
+    <li><strong>Предел для π</strong> не вычисляется «в лоб»: огромные факториалы переполнились бы. Каждое следующее значение получается из предыдущего умножением на 4n(n+1)/(2n+1)².</li>
+    <li><strong>cos x = −1.</strong> Функция cos x + 1 касается нуля, но не меняет знак, а дихотомии нужна смена знака. Поэтому решается равносильное уравнение cos(x/2) = 0: так как cos x + 1 = 2cos²(x/2), корни у них одинаковые, а cos(x/2) знак меняет.</li>
+    <li><strong>n — степени двойки</strong> в пределах для e и ln 2. Числа вида 1/2ᵏ хранятся в <code>double</code> точно, поэтому 1 + 1/n вычисляется без лишней погрешности.</li>
+    <li><strong>Знакочередующиеся ряды</strong> (π, ln 2): ошибка суммы не больше первого отброшенного члена (признак Лейбница). Поэтому остановка по «член &lt; eps» корректна, но ряды сходятся медленно: для π с eps = 10⁻⁶ нужно около 2 млн членов.</li>
+    <li><strong>γ (постоянная Эйлера–Маскерони)</strong> — самая трудная. Формула-предел страдает от вычитания огромных биномиальных коэффициентов, и при m &gt; 40 точность разрушается. Ряд сходится очень медленно. Поэтому у функций есть предел итераций, и при eps = 10⁻⁶ программа честно пишет «точность не гарантируется». Это ожидаемо, так и объясняйте.</li>
+    <li><strong>Уравнение для γ</strong> использует простые числа: они находятся решетом Эратосфена в массиве на 10 млн элементов, выделенном через <code>calloc</code>. Это единственная динамическая память в задании.</li>
+  </ul>
+  <div class="qa">
+    <details><summary>Как работает решето Эратосфена?</summary><div class="ans"><p>Выписываем числа от 2 до N. Берём первое невычеркнутое (оно простое) и вычёркиваем все его кратные, начиная с его квадрата. Повторяем. Невычеркнутые числа — простые. Начинать с p² можно потому, что меньшие кратные уже вычеркнуты меньшими простыми.</p></div></details>
+    <details><summary>Почему eps должен быть меньше 1 и больше 0?</summary><div class="ans"><p>При eps ≤ 0 условие «разница меньше eps» не выполнится никогда. При eps ≥ 1 результат бессмыслен: e = 2.7 ± 1 ничего не говорит.</p></div></details>
+    <details><summary>Почему нельзя задать eps = 10⁻²⁰?</summary><div class="ans"><p><code>double</code> хранит около 15–16 значащих цифр, точнее посчитать невозможно. Программа упрётся в лимит итераций и выдаст предупреждение.</p></div></details>
+    <details><summary>Зачем у Equation второй параметр param?</summary><div class="ans"><p>Для γ уравнение e⁻ˣ = L зависит от числа L, вычисленного заранее. Глобальную переменную использовать нельзя, поэтому L передаётся в функцию уравнения через параметр. Остальные уравнения его игнорируют (<code>(void)param</code> подавляет предупреждение о неиспользуемом параметре).</p></div></details>
+    <details><summary>Почему сходится итерация для √2?</summary><div class="ans"><p>Неподвижная точка g(x) = x − x²/2 + 1 удовлетворяет x² = 2. Производная g'(x) = 1 − x в точке √2 равна ≈ −0.414, по модулю меньше 1, поэтому итерации сходятся к √2 (принцип сжимающих отображений).</p></div></details>
+  </div>
+</section>
+
+<section class="block" id="memory">
+  <div class="sec-head"><h2>Dr. Memory на защите</h2></div>
+  <p>Динамическая память есть в заданиях 2, 4, 6, 7, 8, 9, 10. Для них нужно показать, что утечек нет:</p>
+  <pre><code>gcc -std=c99 -Wall -g -o task7.exe task7.c -lm
+drmemory -suppress mingw.supp -- .\task7.exe -r tests\a7.txt tests\b7.txt tests\out.txt</code></pre>
+  <p>В конце вывода должно быть <code>NO ERRORS FOUND</code> и <code>0 byte(s) of leak(s)</code>. Хорошо показать проверку и на ошибочном сценарии, например с несуществующим файлом: утечки часто прячутся в путях с ошибкой.</p>
+  <div class="qa">
+    <details><summary>Что такое mingw.supp и зачем он?</summary><div class="ans"><p>Файл подавления известных ложных срабатываний. Dr. Memory выдаёт одно сообщение «unaddressable access» внутри стартового кода MinGW (<code>_pei386_runtime_relocator</code>) ещё до запуска <code>main</code>. Оно появляется даже у программы из одной строки <code>printf("hi")</code>, то есть к вашему коду не относится. Можно показать это проверяющему, запустив без <code>-suppress</code>.</p></div></details>
+    <details><summary>Что такое утечка памяти и чем она плоха?</summary><div class="ans"><p>Выделенная, но не освобождённая память, на которую больше нет указателя. В короткой программе её вернёт система при завершении, но в долгой (сервер, игра) утечки копятся, пока память не кончится.</p></div></details>
+    <details><summary>Что значит «unaddressable access»?</summary><div class="ans"><p>Обращение к памяти, которая программе не принадлежит: выход за границы массива, использование освобождённой памяти, разыменование NULL.</p></div></details>
+  </div>
+</section>
+</main>
+</div>
+
+<script>
+(function () {
+  var KEY = "fa-lab1-progress";
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { state = {}; }
+  var boxes = document.querySelectorAll('input[type="checkbox"][data-id]');
+  function render() {
+    var done = 0;
+    boxes.forEach(function (b) {
+      var id = b.getAttribute("data-id");
+      b.checked = !!state[id];
+      if (state[id]) done++;
+      var t = document.querySelector('.tick[data-for="' + id + '"]');
+      if (t) t.textContent = state[id] ? "✓" : "";
+    });
+    document.getElementById("progress-text").textContent = "Разобрано: " + done + " из " + boxes.length;
+    document.getElementById("progress-bar").style.width = (boxes.length ? done / boxes.length * 100 : 0) + "%";
+  }
+  boxes.forEach(function (b) {
+    b.addEventListener("change", function () {
+      state[b.getAttribute("data-id")] = b.checked;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+      render();
+    });
+  });
+  render();
+})();
+</script>
